@@ -52,7 +52,17 @@ if($User->settings->vlanDuplicate==0 && ($_POST['action']=="add" || $_POST['acti
 // if unique required
 if (isset($_POST['unique'])) {
 	if ($_POST['unique']=="on") {
-		if ($Tools->fetch_object ("vlans", "number", $_POST['number'])!==false) { $Result->show("danger", _("VLAN already exists in another domain!"), true); }
+		$existing_vlans = $Tools->fetch_multiple_objects ("vlans", "number", $_POST['number'], "vlanId");
+
+		if ($_POST['action']=="edit") {
+			$existing_vlans = array_filter ($existing_vlans, function ($vlan) {
+				return $vlan->vlanId!=$_POST['vlanid'];
+			});
+		}
+
+		if (count($existing_vlans)>0) {
+			$Result->show("danger", _("VLAN already exists in another domain!"), true);
+		}
 	}
 }
 
